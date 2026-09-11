@@ -1,0 +1,24 @@
+name: node.js workflow
+
+on: push
+
+jobs: 
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: checkout
+              uses: actions/checkout@v7
+
+            - name: setup node.js
+              uses: actions/setup-node@v7
+              
+            - name: install dependencies
+              run: npm install
+
+            - name: test application
+              run: npm test 
+
+            - name: build application
+              run: npm run build
+
