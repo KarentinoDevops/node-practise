@@ -1,3 +1,4 @@
+import { MongoClient } from 'mongodb';
 const uri = `mongodb+srv://karentinodevops_db_user:0mjjI63Ht9Sg2TP8@cluster0.nyc6@cluster0.nyc68je.mongodb.net/event?appName=Cluster0`;
 const client = new MongoClient(uri);
 
