@@ -13,9 +13,6 @@ jobs:
             - name: install dependencies
               run: npm install
               
-            - name: run application
-              run: node server.js
-              
             - name: upload artifact
               uses: actions/upload-artifact@v7   
               with:
