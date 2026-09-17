@@ -1,0 +1,27 @@
+name: node application
+
+on: push
+
+jobs:
+    Build-node-application:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: checkout repository
+              uses: actions/checkout@v7
+
+            - name: install dependencies
+              run: npm install
+              
+            - name: run application
+              run: node server.js
+              
+            - name: upload artifact
+              uses: actions/upload-artifact@v7   
+              with:
+                name: node-application-artifact
+                path: |
+                    server.js
+                    package.json
+                    package-lock.json
+                    public/
