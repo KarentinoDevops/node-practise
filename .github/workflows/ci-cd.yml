@@ -1,6 +1,9 @@
 name: node application
 
-on: push
+on:
+  push:
+    branches:
+      - main
 
 jobs:
     Build-node-application:
