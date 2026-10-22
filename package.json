@@ -5,6 +5,12 @@
   "main": "server.js",
   "author": "Maximilian Schwarzmüller / Academind GmbH",
   "license": "MIT",
+  "scripts": {
+  "build": "find . -path './node_modules' -prune -o -path './.git' -prune -o -type f -name '*.js' -exec node --check {} +",
+  "start": "node server.js",
+  "test": "echo \"Hello World\""
+},
+
   "dependencies": {
     "express": "^4.17.1",
     "body-parser": "1.19.0"
