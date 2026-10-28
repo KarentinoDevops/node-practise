@@ -1,35 +1,48 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: Node.js CI
+name: Node.js CI-CD
 
 on: push
-  
+
+permissions:
+  contents: read
+
+env:
+  AWS_REGION: eu-north-1                   # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: MY_ECR_REPOSITORY           # set this to your Amazon ECR repository name
+  ECS_SERVICE: dev-task-definition-service-vkwl05nm                 # set this to your Amazon ECS service name
+  ECS_CLUSTER: devcluster                 # set this to your Amazon ECS cluster name
+  ECS_TASK_DEFINITION: dev-task-definition # set this to the path to your Amazon ECS task definition
+                                               # file, e.g. .aws/task-definition.json
+  CONTAINER_NAME: nginx:stable-alpine3.24-slim  
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: checkout 
+        uses: actions/checkout@v4
 
-    - name: Use Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 24
-        cache: 'npm'
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+         node-version: 24
+         cache: 'npm'
         
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
-    - run: npx eslint . --fix
+      - run: npm ci
+      - run: npm run build --if-present
+      - run: npm test
+      - run: npx eslint . --fix
 
   docker:
     needs: build
     runs-on: ubuntu-latest
+
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v6
       -
         name: Login to Docker Hub
@@ -49,4 +62,37 @@ jobs:
         with:
           context: .
           push: true
-          tags: karentinodevops/nodejs-app:latest
+          tags: karentinodevops/nodejs-app:${{ github.sha }}
+
+  deploy:
+    name: deploy to ecs
+    needs: docker
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: render-ecs-task-definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: karentinodevops/nodejs-app:${{ github.sha }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
