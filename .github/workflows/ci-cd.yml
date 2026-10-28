@@ -13,9 +13,9 @@ env:
   ECR_REPOSITORY: MY_ECR_REPOSITORY           # set this to your Amazon ECR repository name
   ECS_SERVICE: dev-task-definition-service-vkwl05nm                 # set this to your Amazon ECS service name
   ECS_CLUSTER: devcluster                 # set this to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: dev-task-definition # set this to the path to your Amazon ECS task definition
+  ECS_TASK_DEFINITION: task-definition.json # set this to the path to your Amazon ECS task definition
                                                # file, e.g. .aws/task-definition.json
-  CONTAINER_NAME: nginx:stable-alpine3.24-slim  
+  CONTAINER_NAME: nodejs-app-image
 
 jobs:
   build:
